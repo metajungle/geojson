@@ -1,4 +1,4 @@
 geojson
 =======
 
-GeoJSON things
+Various GeoJSON things
