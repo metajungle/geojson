@@ -1,4 +1,4 @@
-geojson
-=======
+gis-utils
+=========
 
-Various GeoJSON things
+Various GIS utilities and data
