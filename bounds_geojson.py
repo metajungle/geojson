@@ -23,12 +23,13 @@ def main(argv=None):
   
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "h:a", ["help", "address="])
+            opts, args = getopt.getopt(argv[1:], "h:a:b", ["help", "address=", "bounds="])
             if len(opts) > 0:
                 for o, a in opts: 
                     if o in ("-a", "--address"):
-                        print "Address: %s" % a
-                        bounds(a)
+                        print geojson_from_address(a)
+                    elif o in ("-b", "--bounds"):
+                        print geojson_from_bounds(a)
                     elif o in ("-h", "--help"):
                         usage(argv)
             else: 
@@ -44,9 +45,9 @@ def main(argv=None):
         
     return 0
 
-def bounds(address): 
+def geojson_from_address(address): 
     """ 
-    Retrieves the bounds for the given address 
+    Generates a GeoJSON polygon object of the bounds for the given address 
     """
     endpoint = 'http://maps.googleapis.com/maps/api/geocode/json'
     sensor = 'true'
@@ -79,10 +80,33 @@ def bounds(address):
                         coordinates.append([sw['lng'], ne['lat']])
                         geojson['coordinates'] = [coordinates]
                         
-                        print json.dumps(geojson, indent=4, separators=(',', ': '))
+                        return json.dumps(geojson, indent=4, separators=(',', ': '))
     except IOError:
         print sys.stderr, 'Could not open URL.'
 
+def geojson_from_bounds(bounds):
+    """
+    Generates a GeoJSON object of the bounds for the given bounds
+    
+    The bounds should be comma-separated: -75.045,38.32,-75.04,38.325
+    
+    """
+    bnds = [float(b) for b in bounds.split(',')]
+    if len(bnds) == 4:
+        # construct the GeoJSON object 
+        geojson = {}
+        geojson['type'] = "Polygon"
+        coordinates = []
+        coordinates.append([bnds[0], bnds[3]])
+        coordinates.append([bnds[2], bnds[3]])
+        coordinates.append([bnds[2], bnds[1]])
+        coordinates.append([bnds[0], bnds[1]])
+        coordinates.append([bnds[0], bnds[3]])
+        geojson['coordinates'] = [coordinates]
+    
+        return json.dumps(geojson, indent=4, separators=(',', ': '))
+
+    return json.dumps({})
 
 def usage(argv):
     """ Prints usage message """

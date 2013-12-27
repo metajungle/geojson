@@ -71,8 +71,8 @@ def bounds(address):
                         bounds = r['geometry']['bounds']
                         ne = bounds['northeast']
                         sw = bounds['southwest']
-                        b = "%f %f %f %f" % (sw['lng'], ne['lat'], ne['lng'], sw['lat'])
-                        print "Name: %s; Bounds: %s" % (name, b)
+                        bnds = [sw['lng'], ne['lat'], ne['lng'], sw['lat']]
+                        print "%s \n%s" % (name, ','.join([str(b) for b in bnds]))
     except IOError:
         print sys.stderr, 'Could not open URL.'
 
