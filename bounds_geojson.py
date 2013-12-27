@@ -2,13 +2,7 @@
 """
 Finds the bounds of a given address using Google Geocoding API. 
 
-Outputs the bounds using the following pattern:
-
-    [upper-left x] [upper-left y] [lower-right x] [lower-right y]
-
-where x = longitude and y = latitude
-
-This is for example the format GDAL uses for specifying a bounding box. 
+Outputs the bounds as a GeoJSON polygon.
 """
 
 import sys
@@ -30,11 +24,15 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "h:a", ["help", "address="])
-            
-            for o, a in opts: 
-                if o in ("-a", "--address"):
-                    print "Address: %s" % a
-                    bounds(a)
+            if len(args) > 0:
+                for o, a in opts: 
+                    if o in ("-a", "--address"):
+                        print "Address: %s" % a
+                        bounds(a)
+                    elif o in ("-h", "--help"):
+                        usage(argv)
+            else: 
+                usage(argv)
             
         except getopt.error, msg:
              raise Usage(msg)
@@ -43,6 +41,8 @@ def main(argv=None):
         print >> sys.stderr, err.msg
         print >> sys.stderr, "for help use --help"
         return 2
+        
+    return 0
 
 def bounds(address): 
     """ 
@@ -67,10 +67,26 @@ def bounds(address):
                         ne = bounds['northeast']
                         sw = bounds['southwest']
                         b = "%f %f %f %f" % (sw['lng'], ne['lat'], ne['lng'], sw['lat'])
-                        print "Name: %s; Bounds: %s" % (name, b)
+                        
+                        # construct the GeoJSON object 
+                        geojson = {}
+                        geojson['type'] = "Polygon"
+                        coordinates = []
+                        coordinates.append([sw['lng'], ne['lat']])
+                        coordinates.append([ne['lng'], ne['lat']])
+                        coordinates.append([ne['lng'], sw['lat']])
+                        coordinates.append([sw['lng'], sw['lat']])
+                        coordinates.append([sw['lng'], ne['lat']])
+                        geojson['coordinates'] = [coordinates]
+                        
+                        print json.dumps(geojson, indent=4, separators=(',', ': '))
     except IOError:
         print sys.stderr, 'Could not open URL.'
 
+
+def usage(argv):
+    """ Prints usage message """
+    print "%s --address [address]" % argv[0]
 
 if __name__ == "__main__":
   sys.exit(main())
