@@ -24,7 +24,7 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "h:a", ["help", "address="])
-            if len(args) > 0:
+            if len(opts) > 0:
                 for o, a in opts: 
                     if o in ("-a", "--address"):
                         print "Address: %s" % a
